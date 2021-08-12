@@ -6,8 +6,8 @@ BIN_FOLDER=bin
 SRC_FOLDER=src
 
 checkCommand () {
-  if ! command -v "$1" >/dev/null; then
-    echo "$1 required" >&2;
+	if ! command -v "$1" >/dev/null; then
+    	echo "$1 required" >&2;
 		exit 1;
 	fi
 }
