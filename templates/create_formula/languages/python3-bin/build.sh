@@ -14,11 +14,14 @@ checkCommand () {
 
 #python-build:
 	checkCommand pip3
+
+	pip3 install pyinstaller
 	checkCommand pyinstaller
 
 	mkdir -p $BIN_FOLDER
 	cp -r src/requirements.txt $BIN_FOLDER
 	pip3 install -r $SRC_FOLDER/requirements.txt --user --disable-pip-version-check
+
 	pyinstaller -y --distpath $BIN_FOLDER --onefile --clean $SRC_FOLDER/main.py
 
 
