@@ -1,0 +1,71 @@
+name: Build Formulas
+
+on:
+  push:
+    branches:
+      - 'releases/**'
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+
+    outputs:
+      release_name: ${{ steps.check_release.outputs.release_name }}
+      hash_autobuild: ${{ steps.check_status.outputs.hash_autobuild }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - id: check_release
+        name: Check Release Name
+        env:
+          BRANCH_NAME: ${{ github.ref }}
+        run: echo "::set-output name=release_name::${BRANCH_NAME/refs\/heads\/releases\//}"
+
+      - id: validate_release
+        name: Validate Release Name
+        run: |
+          echo "Release ${{ steps.check_release.outputs.release_name }}"
+      - uses: docker://ritclizup/rit-python3-builder
+      - id: build_formulas_python
+        name: Build Formulas Python
+        run: |
+          git config core.fileMode false
+          git status
+          chmod +x ./.github/build.sh
+          ./.github/build.sh ritclizup/rit-go-builder
+          git status
+      - id: clean_up_unnecessary_files
+        name: Clean up unnecessary files
+        run: |
+          find ./ -maxdepth 1 -type f ! -name README.md ! -name LICENSE -delete
+          rm -rf ./.circleci ./.github
+          touch release_${{ steps.check_release.outputs.release_name }}
+          git status
+      - id: commit_changes
+        name: Commit Changes
+        uses: EndBug/add-and-commit@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          signoff: true
+          message: "Auto Build Formulas"
+
+      - id: check_status
+        name: Check Status
+        run: |
+          git status
+          git --no-pager log -1 --format='%H'
+          echo "::set-output name=hash_autobuild::$(git --no-pager log -1 --format='%H')"
+      - id: create_release
+        name: Create Release
+        uses: actions/create-release@v1
+#        uses: GongT/actions-recreate-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.check_release.outputs.release_name }}
+          release_name: Release ${{ steps.check_release.outputs.release_name }}
+          draft: false
+          prerelease: false
+          commitish: ${{ steps.check_status.outputs.hash_autobuild }}
