@@ -12,6 +12,13 @@ checkCommand () {
 	fi
 }
 
+#check os
+if [[ $OSTYPE == 'darwin'* ]]; then
+	BIN_FOLDER=$BIN_FOLDER'/darwin'
+elif [[ $OSTYPE == 'linux-gnu'* ]]; then
+	BIN_FOLDER=$BIN_FOLDER/'linux'
+fi
+
 #python-build:
 	checkCommand pip3
 
