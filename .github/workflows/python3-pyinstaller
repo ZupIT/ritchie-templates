@@ -1,0 +1,52 @@
+name: Build and Push Python3-Pyinstaller
+
+on:    
+  pull_request:
+    paths: 
+      - 'python3-pyinstaller/**'
+    types: [closed]
+  workflow_dispatch:
+
+jobs:
+  push_to_registry:
+    name: Build and Push Docker Image
+    env:
+      registry_host: maurineimirandazup
+      runner_image: python3-pyinstaller-runner:latest
+      builder_image: python3-pyinstaller-builder:latest
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            builder:
+              - 'python3-pyinstaller/Dockerfile.build'
+            runner:
+              - 'python3-pyinstaller/Dockerfile'
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_PASS }}
+            
+      - name: Build and push runner
+        if: steps.changes.outputs.runner == 'true'
+        uses: docker/build-push-action@v2
+        with:
+          file: ./python3-pyinstaller/Dockerfile
+          push: true
+          tags: ${{ env.registry_host }}/${{ env.runner_image }}
+
+      - name: Build and push builder
+        if: steps.changes.outputs.builder == 'true'
+        uses: docker/build-push-action@v2
+        with:
+          file: ./python3-pyinstaller/Dockerfile.build
+          push: true
+          tags: ${{ env.registry_host }}/${{ env.builder_image }}
