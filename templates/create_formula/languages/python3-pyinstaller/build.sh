@@ -12,6 +12,15 @@ checkCommand () {
 	fi
 }
 
+#check os
+if [ "$(uname)" = 'Darwin' ]; then
+	BIN_FOLDER=$BIN_FOLDER'/darwin'
+elif [ "$(uname)" = 'Linux' ]; then
+	BIN_FOLDER=$BIN_FOLDER/'linux'
+else
+	BIN_FOLDER=$BIN_FOLDER/'windows'
+fi
+
 #python-build:
 	checkCommand pip3
 
@@ -37,7 +46,7 @@ checkCommand () {
 	echo "fi"
 	echo "cd \$(dirname \"\$0\")"
 	echo "./main"
-	} >> $BIN_FOLDER/$BINARY_NAME
+	} > $BIN_FOLDER/$BINARY_NAME
 	
 	chmod +x $BIN_FOLDER/$BINARY_NAME
 	chmod +x $BIN_FOLDER/$BINARY_MAIN
