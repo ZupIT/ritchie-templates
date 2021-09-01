@@ -27,7 +27,6 @@ jobs:
           echo "Release ${{ steps.check_release.outputs.release_name }}"
 
   build-linux:
-    #if: ${{ false }}  # disable for now
     runs-on: ubuntu-latest
     needs: prepare-release
     steps:
@@ -165,7 +164,6 @@ jobs:
       - id: create_release
         name: Create Release
         uses: actions/create-release@v1
-#        uses: GongT/actions-recreate-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
