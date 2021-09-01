@@ -1,5 +1,5 @@
 {
-  "dockerImageBuilder": "ritclizup/rit-python3-builder",
+  "dockerImageBuilder": "ritclizup/rit-python3-pyinstaller",
   "inputs": [
     {
       "cache": {
