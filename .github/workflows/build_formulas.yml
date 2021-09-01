@@ -1,0 +1,176 @@
+name: Build Formulas
+
+on:
+  push:
+    branches:
+      - 'releases/**'
+
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+
+    outputs:
+      release_name: ${{ steps.check_release.outputs.release_name }}
+      hash_autobuild: ${{ steps.check_status.outputs.hash_autobuild }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - id: check_release
+        name: Check Release Name
+        env:
+          BRANCH_NAME: ${{ github.ref }}
+        run: echo "::set-output name=release_name::${BRANCH_NAME/refs\/heads\/releases\//}"
+
+      - id: validate_release
+        name: Validate Release Name
+        run: |
+          echo "Release ${{ steps.check_release.outputs.release_name }}"
+
+  build-linux:
+    #if: ${{ false }}  # disable for now
+    runs-on: ubuntu-latest
+    needs: prepare-release
+    steps:
+
+      #Checkout files, build golang formulas
+      - uses: actions/checkout@v2
+      - uses: docker://ritclizup/rit-go-builder
+      - id: build_formulas_go
+        name: Build And Compress Formulas GO
+        run: |
+          git config core.fileMode false  
+          git status
+          chmod +x ./.github/build-go.sh
+          ./.github/build-go.sh ritclizup/rit-go-builder
+          git status
+
+      #Build formulas python
+      - id: build_formulas_python
+        name: Build And Compress Formulas Python
+        run: |
+          git config core.fileMode false
+          git status
+          chmod +x ./.github/build-py.sh
+          ./.github/build-py.sh maurineimirandazup/python3-pyinstaller-builder
+          git status
+
+      #Copy files do Artifact Folder
+      - run: |
+          pwd
+          mkdir ../build_linux
+          cp -R . ../build_linux
+
+      #Upload Artifacts
+      - uses: actions/upload-artifact@master
+        with:
+          name: build_linux
+          path: /home/runner/work/remote-build/build_linux
+
+  build-mac:
+    runs-on: macos-10.15
+    needs: prepare-release
+    steps:
+      #Build formulas python
+      - uses: actions/checkout@v2
+      - id: build_formulas_python
+        name: Build And Compress Formulas Python
+        run: |
+          git config core.fileMode false
+          git status
+          chmod +x ./.github/build-py.sh
+          ./.github/build-py.sh maurineimirandazup/python3-pyinstaller-builder
+          git status
+
+      #Copy files do Artifact Folder
+      - run: |
+          mkdir ../build_mac
+          cp -R * ../build_mac
+
+      #Upload Artifacts
+      - uses: actions/upload-artifact@master
+        with:
+          name: build_mac
+          path: /Users/runner/work/remote-build/build_mac
+
+  build-windows:
+    runs-on: windows-latest
+    needs: prepare-release
+    steps:
+      #Build formulas python
+      - uses: actions/checkout@v2
+      - id: build_formulas_python
+        name: Build And Compress Formulas Python
+        run: |
+          git config core.fileMode false
+          git status
+          chmod +x ./.github/build-py.sh
+          bash ./.github/build-py.sh maurineimirandazup/python3-pyinstaller-builder
+          git status
+
+      #Copy files do Artifact Folder
+      - run: |
+          mkdir ../build_win
+          cp -R * ../build_win
+
+      #Upload Artifacts
+      - uses: actions/upload-artifact@master
+        with:
+          name: build_win
+          path: D:\a\remote-build\build_win
+
+  generate-release:
+    runs-on: ubuntu-latest
+    needs: [build-linux, build-mac, build-windows, prepare-release]
+    steps:
+      - id: checkout_files
+        name: checkout files
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+
+      - uses: actions/download-artifact@v2
+        with:
+          path: ./
+
+      - name: move files
+        run: |
+          cp -Rn ./build_linux/* ./
+          cp -Rn ./build_mac/* ./
+          cp -Rn ./build_win/* ./
+
+      - id: clean_up_unnecessary_files
+        name: Clean up unnecessary files
+        run: |
+          find ./ -maxdepth 1 -type f ! -name README.md ! -name LICENSE -delete
+          rm -rf ./.circleci ./.github
+          rm -rf ./build_linux
+          rm -rf ./build_mac
+          rm -rf ./build_win
+          touch release_${{ needs.prepare-release.outputs.release_name }}
+          git status
+
+      - id: commit_changes
+        name: Commit Changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Auto Build 1
+
+      - id: check_status
+        name: Check Status
+        run: |
+          git status
+          git --no-pager log -1 --format='%H'
+          echo "::set-output name=hash_autobuild::$(git --no-pager log -1 --format='%H')"
+
+      - id: create_release
+        name: Create Release
+        uses: actions/create-release@v1
+#        uses: GongT/actions-recreate-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.prepare-release.outputs.release_name }}
+          release_name: Release ${{ needs.prepare-release.outputs.release_name }}
+          draft: false
+          prerelease: false
+          commitish: ${{ needs.prepare-release.outputs.hash_autobuild }}
