@@ -2,6 +2,8 @@ FROM ritclizup/rit-shell-bat-runner
 
 USER root
 
+RUN apk add terraform
+
 RUN mkdir /rit
 COPY . /rit
 RUN sed -i 's/\r//g' /rit/set_umask.sh

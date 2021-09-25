@@ -1,0 +1,34 @@
+dockerImageBuilder: ritclizup/rit-powershell-builder
+template: powershell
+templateRelease: "{tag}"
+inputs:
+  - name: rit_input_text
+    label: 'Type your name: '
+    type: text
+    tutorial: "Add your name"
+    cache:
+      active: true
+      newLabel: 'Type new value. '
+      qty: 3
+  - name: rit_input_boolean
+    label: 'Have you ever used Ritchie? '
+    type: bool
+    tutorial: 'Tell us the truth'
+    default: 'false'
+    items:
+      - 'false'
+      - 'true'
+  - name: rit_input_list
+    label: 'What do you want to automate? '
+    type: text
+    tutorial: 'Choose one option'
+    default: 'everything'
+    items:
+      - 'daily tasks'
+      - 'workflows'
+      - 'toils'
+      - 'everything'
+  - name: rit_input_password
+    label: 'Tell us a secret: '
+    type: password
+    tutorial: 'Type anything you want'
