@@ -1,3 +1,7 @@
+# The Ritchie CLI project has been archived by Zup Innovation. It might start again eventually; however, we won't deliver support for now.
+
+
+
 # Ritchie Templates
 
 ## 🇺🇸 How to add some language on Rit create formula
@@ -8,7 +12,7 @@
   - `Makefile`, this file should do:
     - create `run.sh` and `run.bat`, these files should explain how to run the formula,
      `run.sh` is called on linux and mac system
-     and `build.bat` will be called on windows system
+      and `build.bat` will be called on windows system
     - copy files that `run.sh` and `run.bat` needs to run
     - remember `Makefile` can be called inside a docker using
      the dockerImageBuilder as the docker image name
@@ -51,9 +55,9 @@ Vamos entender para que server cada componente:
 
 - **config.json** nesse arquivo você deve adicionar os inputs da fórmula
  que está na pasta src. alem disso você pode adicionar
- o campo *dockerImageBuilder* que é a imagem que deve ser utiliza para
- fazer o build do seu código. Lembrando que esse campo é opcional, caso ele
- não exista o ritchie sempre vai fazer o build local.
+  o campo *dockerImageBuilder* que é a imagem que deve ser utiliza para
+  fazer o build do seu código. Lembrando que esse campo é opcional, caso ele
+  não exista o ritchie sempre vai fazer o build local.
 
 ### Build Local
 
@@ -91,7 +95,7 @@ Caso você adicione o arquivo **Dockerfile**, o ritchie vai rodar o **run.sh**
  build do docker que vai rodar o **run.sh**
 - **set_umask.sh** é o entrypoint do docker,
  normalmente esse arquivo utiliza o comando umask para que o volume
- dentro do docker tenha uma melhor compatibilidade.
+  dentro do docker tenha uma melhor compatibilidade.
 
 **Lembrando que devemos copiar esses arquivos para a
  pasta bin ao fazer o build.**
@@ -102,7 +106,7 @@ Caso você adicione o arquivo **Dockerfile**, o ritchie vai rodar o **run.sh**
  do ritchie para fazer a indexação.
 - **README.md** arquivo para explicar como utilizar a fórmula.
  Quando alguém abrir a pasta da sua fórmula pelo github,
- ele vai ver o conteúdo desse arquivo.
+  ele vai ver o conteúdo desse arquivo.
 
 ### Pasta root
 
